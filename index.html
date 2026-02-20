@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Generic Live Demo</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin: 24px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+    input { padding: 8px 10px; min-width: 160px; }
+    button { padding: 8px 12px; cursor: pointer; }
+    #log { border: 1px solid #ddd; padding: 12px; height: 320px; overflow: auto; white-space: pre-wrap; }
+    .hint { color: #666; font-size: 13px; margin: 8px 0 16px; }
+  </style>
+</head>
+<body>
+  <h1>通用直播间互动 Demo</h1>
+  <div class="hint">默认连接：ws://localhost:9010（可在代码里改）</div>
+
+  <div class="row">
+    <input id="room" placeholder="Room ID (e.g. 1001)" />
+    <input id="user" placeholder="Username (e.g. alice)" />
+    <button onclick="join()">Join</button>
+    <button onclick="leave()">Leave</button>
+  </div>
+
+  <div class="row">
+    <input id="msg" placeholder="Message..." style="min-width: 320px" />
+    <button onclick="send()">Send</button>
+  </div>
+
+  <h3>Logs</h3>
+  <div id="log"></div>
+
+  <script src="../sdk/live-sdk.js"></script>
+  <script>
+    const logEl = document.getElementById("log");
+    const sdk = new LiveSDK({ serverUrl: "ws://localhost:9010" });
+
+    function log(line) {
+      logEl.textContent += line + "\n";
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    sdk.on("system", (e) => log("[system] " + JSON.stringify(e)));
+    sdk.on("message", (e) => log("[message] " + (typeof e === "string" ? e : JSON.stringify(e))));
+
+    sdk.connect();
+
+    function join() {
+      sdk.joinRoom(document.getElementById("room").value, document.getElementById("user").value);
+    }
+    function leave() {
+      sdk.leaveRoom();
+    }
+    function send() {
+      sdk.sendChat(document.getElementById("msg").value);
+      document.getElementById("msg").value = "";
+    }
+  </script>
+</body>
+</html>
